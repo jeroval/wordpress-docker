@@ -1,8 +1,6 @@
-# Define docker compose version
 version: '3.6'
 services:
 
-# Install wordpress
   wordpress:
     image: wordpress:${WORDPRESS_VERSION:-latest}
     container_name: ${COMPOSE_PROJECT_NAME:-wordpress}
@@ -22,7 +20,6 @@ services:
     ports:
         - 80:80
 
-# Install database
   mysql:
     image: mariadb:${MARIADB_VERSION:-latest}
     container_name: ${COMPOSE_PROJECT_NAME}_mysql
@@ -34,8 +31,7 @@ services:
       - MYSQL_PASSWORD=${DATABASE_PASSWORD:-password}
       - MYSQL_DATABASE=${COMPOSE_PROJECT_NAME:-wordpress}
     restart: always
-    
-# Manage database optionnal
+
   phpmyadmin:
     depends_on:
       - mysql
@@ -47,6 +43,15 @@ services:
     environment:
       PMA_HOST: mysql
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
+
+  # Command line interface to wordpress
+  wpcli:
+    build: ./wpcli/
+    image: wpcli
+    container_name: ${COMPOSE_PROJECT_NAME}_wpcli
+    volumes:
+      - ${WORDPRESS_DATA_DIR:-./wordpress}:/var/www/html
+    working_dir: /var/www/html
 
 # Check availability of essential services
   healthcheck:
@@ -61,5 +66,3 @@ services:
       - WAIT_HOSTS_TIMEOUT=${WAIT_HOSTS_TIMEOUT:-300}
       - WAIT_SLEEP_INTERVAL=${WAIT_SLEEP_INTERVAL:-30}
       - WAIT_HOST_CONNECT_TIMEOUT=${WAIT_HOST_CONNECT_TIMEOUT:-30}
-
-
